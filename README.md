@@ -15,8 +15,10 @@ This will install all the required dependencies
 
 MONGO_URL = mongoDbConnectionString
 
-by replacing mongoDbConnectionString with your own connection string.
+in the .env file by replacing mongoDbConnectionString with your own connection string.
 
-4. Now use
+4. Save the file
+
+5. Now use
   npm run server
 to start the server.
