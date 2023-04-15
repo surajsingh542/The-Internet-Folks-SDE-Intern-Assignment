@@ -20,12 +20,14 @@ const createRoleController = async (req, res, next) => {
     let scopes = [];
     if (name.toLowerCase() === "community admin") {
       scopes = ["member-get", "member-add", "member-remove"];
+    } else if (name.toLowerCase() === "community moderator") {
+      scopes = ["member-get", "member-remove"];
     } else {
       scopes = ["member-get"];
     }
     const roleCreated = await Role.create({
       _id: Snowflake.generate(),
-      name,
+      name: name.toLowerCase(),
       scopes,
     });
     res.json({

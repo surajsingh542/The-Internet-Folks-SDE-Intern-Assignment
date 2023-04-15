@@ -118,12 +118,40 @@ const removeMemberController = async (req, res, next) => {
     }
 
     if (memberFound) {
+      let isOwnerFound = false;
+
       // Community Admin check
       const communityOwner = await Community.findOne({
         _id: memberFound?.community,
         owner: req.user,
       });
-      if (!communityOwner) {
+
+      if (communityOwner) {
+        isOwnerFound = true;
+      }
+
+      // if (!communityOwner) {
+
+      // }
+
+      const roleFound = await Role.find({ name: "community moderator" });
+
+      let isModeratorPresent = false;
+
+      roleFound.forEach(async (role) => {
+        // community moderator check
+        const moderatorFound = await Member.findOne({
+          community: memberFound?.community,
+          role: role._id,
+        });
+
+        if (moderatorFound) {
+          isModeratorPresent = true;
+          return;
+        }
+      });
+
+      if (!isOwnerFound || !isModeratorPresent) {
         errorFound = true;
         errors.push({
           message: "You are not authorized to perform this action.",
