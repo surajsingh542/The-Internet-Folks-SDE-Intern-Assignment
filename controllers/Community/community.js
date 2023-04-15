@@ -34,14 +34,27 @@ const createCommunityController = async (req, res, next) => {
       owner: req.user,
     });
 
-    const roleFound = await Role.findOne({ name: "Community Admin" });
-
-    await Member.create({
-      _id: Snowflake.generate().toString(),
-      community: communityCreated._id,
-      user: communityCreated.owner,
-      role: roleFound._id,
-    });
+    const roleFound = await Role.findOne({ name: "community admin" });
+    if (!roleFound) {
+      const roleCreated = await Role.create({
+        _id: Snowflake.generate(),
+        name: "community admin",
+        scopes: ["member-get", "member-add", "member-remove"],
+      });
+      await Member.create({
+        _id: Snowflake.generate().toString(),
+        community: communityCreated._id,
+        user: communityCreated.owner,
+        role: roleCreated._id,
+      });
+    } else {
+      await Member.create({
+        _id: Snowflake.generate().toString(),
+        community: communityCreated._id,
+        user: communityCreated.owner,
+        role: roleFound._id,
+      });
+    }
 
     res.json({
       status: true,

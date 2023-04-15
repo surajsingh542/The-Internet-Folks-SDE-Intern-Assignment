@@ -98,6 +98,10 @@ const userSignInController = async (req, res) => {
         message: "Please provide a valid email address.",
         code: "INVALID_INPUT",
       });
+      return res.status(400).json({
+        status: false,
+        errors,
+      });
     }
 
     // find the user

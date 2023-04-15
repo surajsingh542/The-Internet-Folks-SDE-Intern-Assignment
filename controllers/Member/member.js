@@ -91,7 +91,7 @@ const addMemberController = async (req, res, next) => {
           community: memberCreated.community,
           user: memberCreated.user,
           role: memberCreated.role,
-          created_at: memberCreated.createdAt,
+          created_at: memberCreated.created_at,
         },
       },
     });
@@ -117,9 +117,10 @@ const removeMemberController = async (req, res, next) => {
       });
     }
 
-    if (memberFound) {
-      let isOwnerFound = false;
+    let isOwnerFound = false;
+    let isModeratorPresent = false;
 
+    if (memberFound) {
       // Community Admin check
       const communityOwner = await Community.findOne({
         _id: memberFound?.community,
@@ -134,24 +135,20 @@ const removeMemberController = async (req, res, next) => {
 
       // }
 
-      const roleFound = await Role.find({ name: "community moderator" });
+      const roleFound = await Role.findOne({ name: "community moderator" });
 
-      let isModeratorPresent = false;
-
-      roleFound.forEach(async (role) => {
-        // community moderator check
-        const moderatorFound = await Member.findOne({
-          community: memberFound?.community,
-          role: role._id,
-        });
-
-        if (moderatorFound) {
-          isModeratorPresent = true;
-          return;
-        }
+      // community moderator check
+      const moderatorFound = await Member.findOne({
+        community: memberFound?.community,
+        role: roleFound._id,
+        user: req.user,
       });
 
-      if (!isOwnerFound || !isModeratorPresent) {
+      if (moderatorFound) {
+        isModeratorPresent = true;
+      }
+
+      if (!isOwnerFound && !isModeratorPresent) {
         errorFound = true;
         errors.push({
           message: "You are not authorized to perform this action.",

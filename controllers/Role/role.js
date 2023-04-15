@@ -35,7 +35,7 @@ const createRoleController = async (req, res, next) => {
       content: {
         data: {
           id: roleCreated._id,
-          name: roleCreated.name,
+          name,
           created_at: roleCreated.created_at,
           updated_at: roleCreated.updated_at,
         },
