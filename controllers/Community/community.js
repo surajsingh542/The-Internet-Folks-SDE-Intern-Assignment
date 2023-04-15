@@ -66,12 +66,21 @@ const getAllCommunityController = async (req, res, next) => {
     let { page } = req.query;
     if (!page) page = 1;
     const skip = (page - 1) * 10;
-    const communities = await Community.find({}, { __v: 0 })
+    const communities = await Community.find({})
+      .select({
+        _id: 0,
+        id: "$_id",
+        name: "$name",
+        slug: "$slug",
+        owner: "$owner",
+        created_at: "$created_at",
+        updated_at: "$updated_at",
+      })
       .skip(skip)
       .limit(10)
       .populate({
         path: "owner",
-        select: "name",
+        select: { _id: 0, name: "$name", id: "$_id" },
       });
 
     const count = await Community.countDocuments({}, { hint: "_id_" });
@@ -99,14 +108,22 @@ const getAllCommunityMembersController = async (req, res, next) => {
     const skip = (page - 1) * 10;
 
     const communityID = req.params.id;
-    const members = await Member.find(
-      { community: communityID },
-      { __v: 0, updated_at: 0 }
-    )
+    const members = await Member.find({ community: communityID })
+      .select({
+        _id: 0,
+        id: "$_id",
+        community: "$community",
+        user: "$user",
+        role: "$role",
+        created_at: "$created_at",
+      })
       .skip(skip)
       .limit(10)
-      .populate({ path: "role", select: "_id name" })
-      .populate({ path: "user", select: "_id name" });
+      .populate({ path: "user", select: { _id: 0, name: "$name", id: "$_id" } })
+      .populate({
+        path: "role",
+        select: { _id: 0, name: "$name", id: "$_id" },
+      });
 
     const count = await Member.countDocuments({ community: communityID });
 
@@ -132,10 +149,16 @@ const getOwnedCommunityController = async (req, res, next) => {
     if (!page) page = 1;
     const skip = (page - 1) * 10;
 
-    const communitiesOwned = await Community.find(
-      { owner: req.user },
-      { __v: 0 }
-    )
+    const communitiesOwned = await Community.find({ owner: req.user })
+      .select({
+        _id: 0,
+        id: "$_id",
+        name: "$name",
+        slug: "$slug",
+        owner: "$owner",
+        created_at: "$created_at",
+        updated_at: "$updated_at",
+      })
       .skip(skip)
       .limit(10);
 
@@ -163,18 +186,24 @@ const getJoinedCommunityController = async (req, res, next) => {
     if (!page) page = 1;
     const skip = (page - 1) * 10;
 
-    const members = await Member.find(
-      { user: req.user },
-      { __v: 0, updated_at: 0, _id: 0, user: 0, role: 0, created_at: 0 }
-    )
+    const members = await Member.find({ user: req.user })
+      .select({ _id: 0 })
       .skip(skip)
       .limit(10)
       .populate({
         path: "community",
-        select: { __v: 0 },
+        select: {
+          _id: 0,
+          updated_at: "$updated_at",
+          created_at: "$created_at",
+          owner: "$owner",
+          slug: "$slug",
+          name: "$name",
+          id: "$_id",
+        },
         populate: {
           path: "owner",
-          select: "_id name",
+          select: { _id: 0, name: "$name", id: "$_id" },
         },
       });
 

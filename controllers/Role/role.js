@@ -34,8 +34,8 @@ const createRoleController = async (req, res, next) => {
         data: {
           id: roleCreated._id,
           name: roleCreated.name,
-          created_at: roleCreated.createdAt,
-          updated_at: roleCreated.updatedAt,
+          created_at: roleCreated.created_at,
+          updated_at: roleCreated.updated_at,
         },
       },
     });
@@ -49,7 +49,16 @@ const getRolesController = async (req, res, next) => {
     let { page } = req.query;
     if (!page) page = 1;
     const skip = (page - 1) * 10;
-    const roles = await Role.find({}, { __v: 0 }).skip(skip).limit(10);
+    const roles = await Role.find({})
+      .select({
+        _id: 0,
+        id: "$_id",
+        name: "$name",
+        created_at: "$created_at",
+        updated_at: "$updated_at",
+      })
+      .skip(skip)
+      .limit(10);
 
     const count = await Role.countDocuments({}, { hint: "_id_" });
 
