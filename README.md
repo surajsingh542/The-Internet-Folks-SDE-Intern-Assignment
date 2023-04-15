@@ -20,5 +20,7 @@ in the .env file by replacing mongoDbConnectionString with your own connection s
 4. Save the file
 
 5. Now use
+
   npm run server
+
 to start the server.
