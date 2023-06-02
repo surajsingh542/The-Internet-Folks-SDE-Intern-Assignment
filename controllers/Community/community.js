@@ -1,3 +1,4 @@
+const prisma = require("../../prisma/index");
 const { Snowflake } = require("@theinternetfolks/snowflake");
 const AppErr = require("../../utils/AppErr");
 const Community = require("../../models/community");
@@ -27,32 +28,56 @@ const createCommunityController = async (req, res, next) => {
       });
     }
 
-    const communityCreated = await Community.create({
-      _id: Snowflake.generate().toString(),
-      name,
-      slug: name.toLowerCase(),
-      owner: req.user,
+    const communityCreated = await prisma.community.create({
+      data: {
+        id: Snowflake.generate().toString(),
+        name,
+        slug: name.toLowerCase(),
+        owner: { connect: { id: req.user } },
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     });
 
-    const roleFound = await Role.findOne({ name: "community admin" });
-    if (!roleFound) {
-      const roleCreated = await Role.create({
-        _id: Snowflake.generate(),
+    // console.log("Community Created", communityCreated);
+    // return res.json("success");
+
+    const roleFound = await prisma.role.findUnique({
+      where: {
         name: "community admin",
-        scopes: ["member-get", "member-add", "member-remove"],
+      },
+    });
+
+    if (!roleFound) {
+      const roleCreated = await prisma.role.create({
+        data: {
+          id: Snowflake.generate(),
+          name: "community admin",
+          scopes: ["member-get", "member-add", "member-remove"],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       });
-      await Member.create({
-        _id: Snowflake.generate().toString(),
-        community: communityCreated._id,
-        user: communityCreated.owner,
-        role: roleCreated._id,
+      await prisma.member.create({
+        data: {
+          id: Snowflake.generate().toString(),
+          community: { connect: { id: communityCreated.id } },
+          user: { connect: { id: communityCreated.ownerId } },
+          role: { connect: { id: roleCreated.id } },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       });
     } else {
-      await Member.create({
-        _id: Snowflake.generate().toString(),
-        community: communityCreated._id,
-        user: communityCreated.owner,
-        role: roleFound._id,
+      await prisma.member.create({
+        data: {
+          id: Snowflake.generate().toString(),
+          community: { connect: { id: communityCreated.id } },
+          user: { connect: { id: communityCreated.ownerId } },
+          role: { connect: { id: roleFound.id } },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
       });
     }
 
@@ -60,12 +85,12 @@ const createCommunityController = async (req, res, next) => {
       status: true,
       content: {
         data: {
-          id: communityCreated._id,
+          id: communityCreated.id,
           name: communityCreated.name,
           slug: communityCreated.slug,
-          owner: communityCreated.owner,
-          created_at: communityCreated.created_at,
-          updated_at: communityCreated.updated_at,
+          owner: communityCreated.ownerId,
+          created_at: communityCreated.createdAt,
+          updated_at: communityCreated.updatedAt,
         },
       },
     });
@@ -79,24 +104,25 @@ const getAllCommunityController = async (req, res, next) => {
     let { page } = req.query;
     if (!page) page = 1;
     const skip = (page - 1) * 10;
-    const communities = await Community.find({})
-      .select({
-        _id: 0,
-        id: "$_id",
-        name: "$name",
-        slug: "$slug",
-        owner: "$owner",
-        created_at: "$created_at",
-        updated_at: "$updated_at",
-      })
-      .skip(skip)
-      .limit(10)
-      .populate({
-        path: "owner",
-        select: { _id: 0, name: "$name", id: "$_id" },
-      });
+    const communities = await prisma.community.findMany({
+      skip,
+      take: 10,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        owner: {
+          select: {
+            id: true,
+            name: true,
+          },
+        },
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
 
-    const count = await Community.countDocuments({}, { hint: "_id_" });
+    const count = await prisma.community.count();
 
     res.json({
       status: true,
@@ -121,24 +147,25 @@ const getAllCommunityMembersController = async (req, res, next) => {
     const skip = (page - 1) * 10;
 
     const communityID = req.params.id;
-    const members = await Member.find({ community: communityID })
-      .select({
-        _id: 0,
-        id: "$_id",
-        community: "$community",
-        user: "$user",
-        role: "$role",
-        created_at: "$created_at",
-      })
-      .skip(skip)
-      .limit(10)
-      .populate({ path: "user", select: { _id: 0, name: "$name", id: "$_id" } })
-      .populate({
-        path: "role",
-        select: { _id: 0, name: "$name", id: "$_id" },
-      });
 
-    const count = await Member.countDocuments({ community: communityID });
+    const members = await prisma.member.findMany({
+      where: { communityId: communityID },
+      skip,
+      take: 10,
+      select: {
+        id: true,
+        communityId: true,
+        user: {
+          select: { id: true, name: true },
+        },
+        role: { select: { id: true, name: true } },
+        createdAt: true,
+      },
+    });
+
+    const count = await prisma.member.count({
+      where: { communityId: communityID },
+    });
 
     res.json({
       status: true,
@@ -162,20 +189,25 @@ const getOwnedCommunityController = async (req, res, next) => {
     if (!page) page = 1;
     const skip = (page - 1) * 10;
 
-    const communitiesOwned = await Community.find({ owner: req.user })
-      .select({
-        _id: 0,
-        id: "$_id",
-        name: "$name",
-        slug: "$slug",
-        owner: "$owner",
-        created_at: "$created_at",
-        updated_at: "$updated_at",
-      })
-      .skip(skip)
-      .limit(10);
+    const communitiesOwned = await prisma.community.findMany({
+      where: {
+        ownerId: req.user,
+      },
+      skip,
+      take: 10,
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        ownerId: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
 
-    const count = await Community.countDocuments({ owner: req.user });
+    const count = await prisma.community.count({
+      where: { ownerId: req.user },
+    });
 
     res.json({
       status: true,
@@ -199,28 +231,25 @@ const getJoinedCommunityController = async (req, res, next) => {
     if (!page) page = 1;
     const skip = (page - 1) * 10;
 
-    const members = await Member.find({ user: req.user })
-      .select({ _id: 0 })
-      .skip(skip)
-      .limit(10)
-      .populate({
-        path: "community",
-        select: {
-          _id: 0,
-          updated_at: "$updated_at",
-          created_at: "$created_at",
-          owner: "$owner",
-          slug: "$slug",
-          name: "$name",
-          id: "$_id",
+    const members = await prisma.member.findMany({
+      where: { userId: req.user },
+      skip,
+      take: 10,
+      select: {
+        community: {
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            owner: { select: { id: true, name: true } },
+            createdAt: true,
+            updatedAt: true,
+          },
         },
-        populate: {
-          path: "owner",
-          select: { _id: 0, name: "$name", id: "$_id" },
-        },
-      });
+      },
+    });
 
-    const count = await Member.countDocuments({ user: req.user });
+    const count = await prisma.member.count({ where: { userId: req.user } });
 
     const formattedMembers = members.map((member) => {
       return member.community;

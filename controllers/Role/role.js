@@ -1,3 +1,4 @@
+const prisma = require("../../prisma/index");
 const AppErr = require("../../utils/AppErr");
 const Role = require("../../models/role");
 const { Snowflake } = require("@theinternetfolks/snowflake");
@@ -25,19 +26,23 @@ const createRoleController = async (req, res, next) => {
     } else {
       scopes = ["member-get"];
     }
-    const roleCreated = await Role.create({
-      _id: Snowflake.generate(),
-      name: name.toLowerCase(),
-      scopes,
+    const roleCreated = await prisma.role.create({
+      data: {
+        id: Snowflake.generate().toString(),
+        name: name.toLowerCase(),
+        scopes,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     });
     res.json({
       status: true,
       content: {
         data: {
-          id: roleCreated._id,
+          id: roleCreated.id,
           name,
-          created_at: roleCreated.created_at,
-          updated_at: roleCreated.updated_at,
+          created_at: roleCreated.createdAt,
+          updated_at: roleCreated.updatedAt,
         },
       },
     });
@@ -51,18 +56,18 @@ const getRolesController = async (req, res, next) => {
     let { page } = req.query;
     if (!page) page = 1;
     const skip = (page - 1) * 10;
-    const roles = await Role.find({})
-      .select({
-        _id: 0,
-        id: "$_id",
-        name: "$name",
-        created_at: "$created_at",
-        updated_at: "$updated_at",
-      })
-      .skip(skip)
-      .limit(10);
+    const roles = await prisma.role.findMany({
+      skip,
+      take: 10,
+      select: {
+        id: true,
+        name: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
 
-    const count = await Role.countDocuments({}, { hint: "_id_" });
+    const count = await prisma.role.count();
 
     res.json({
       status: true,

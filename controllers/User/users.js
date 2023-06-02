@@ -1,3 +1,4 @@
+const prisma = require("../../prisma/index");
 const bcrypt = require("bcryptjs");
 const User = require("../../models/user");
 const generateToken = require("../../utils/generateToken");
@@ -31,7 +32,12 @@ const userSignUpController = async (req, res, next) => {
     }
 
     // check if user already exists
-    const userFound = await User.findOne({ email });
+    const userFound = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
     if (userFound) {
       errorFound = true;
       errors.push({
@@ -55,11 +61,15 @@ const userSignUpController = async (req, res, next) => {
     const id = Snowflake.generate().toString();
 
     // signup user
-    const userCreated = await User.create({
-      _id: id,
-      name,
-      email,
-      password: hashedPassword,
+    const userCreated = await prisma.user.create({
+      data: {
+        id,
+        name,
+        email,
+        password: hashedPassword,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
     });
 
     // send response
@@ -67,13 +77,13 @@ const userSignUpController = async (req, res, next) => {
       status: true,
       content: {
         data: {
-          id: userCreated._id,
+          id: userCreated.id,
           name: userCreated.name,
           email: userCreated.email,
           created_at: userCreated.createdAt,
         },
         meta: {
-          access_token: generateToken(userCreated._id),
+          access_token: generateToken(userCreated.id),
         },
       },
     });
@@ -105,7 +115,12 @@ const userSignInController = async (req, res) => {
     }
 
     // find the user
-    const userFound = await User.findOne({ email });
+    const userFound = await prisma.user.findUnique({
+      where: {
+        email,
+      },
+    });
+
     if (!userFound) {
       errorFound = true;
       errors.push({
@@ -142,13 +157,13 @@ const userSignInController = async (req, res) => {
       status: true,
       content: {
         data: {
-          id: userFound._id,
+          id: userFound.id,
           name: userFound.name,
           email: userFound.email,
           created_at: userFound.createdAt,
         },
         meta: {
-          access_token: generateToken(userFound._id),
+          access_token: generateToken(userFound.id),
         },
       },
     });
@@ -160,14 +175,16 @@ const userSignInController = async (req, res) => {
 const userDetails = async (req, res, next) => {
   try {
     // find the user
-    const userFound = await User.findById(req.user);
+    const userFound = await prisma.user.findUnique({
+      where: { id: req.user },
+    });
 
     // send response
     res.json({
       status: true,
       content: {
         data: {
-          id: userFound._id,
+          id: userFound.id,
           name: userFound.name,
           email: userFound.email,
           created_at: userFound.createdAt,

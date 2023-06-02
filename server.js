@@ -5,7 +5,7 @@ const userRoutes = require("./routes/User/user");
 const globalErrHandler = require("./middlewares/globalErrHandler");
 const communityRoutes = require("./routes/Community/community");
 const memberRoutes = require("./routes/Member/member");
-require("./config/dbconnect");
+// require("./config/dbconnect");
 const app = express();
 
 //pass incoming data
