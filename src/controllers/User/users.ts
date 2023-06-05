@@ -1,11 +1,12 @@
 import { prisma } from "../../utils/db.server";
-const bcrypt = require("bcryptjs");
-const User = require("../../models/user");
-const generateToken = require("../../utils/generateToken");
-const { Snowflake } = require("@theinternetfolks/snowflake");
+// const bcrypt = require("bcryptjs");
+import * as bcrypt from "bcryptjs";
+import { generateToken } from "../../utils/generateToken";
+import { Snowflake } from "@theinternetfolks/snowflake";
 import AppErr from "../../utils/AppErr";
 import { Request, Response, NextFunction } from "express";
-const validator = require("validator");
+import validator from "validator";
+import * as UserService from "./user.service";
 
 const userSignUpController = async (
   req: Request,
@@ -63,19 +64,24 @@ const userSignUpController = async (
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    const id = Snowflake.generate().toString();
+    // const id = Snowflake.generate().toString();
 
     // signup user
-    const userCreated = await prisma.user.create({
-      data: {
-        id,
-        name,
-        email,
-        password: hashedPassword,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
+    const userCreated = await UserService.userSignUp({
+      name,
+      email,
+      password: hashedPassword,
     });
+    // const userCreated = await prisma.user.create({
+    //   data: {
+    //     id,
+    //     name,
+    //     email,
+    //     password: hashedPassword,
+    //     createdAt: new Date(),
+    //     updatedAt: new Date(),
+    //   },
+    // });
 
     // send response
     res.json({
@@ -184,28 +190,33 @@ const userSignInController = async (
 const userDetails = async (req: Request, res: Response, next: NextFunction) => {
   try {
     // find the user
-    const userFound = await prisma.user.findUnique({
-      where: { id: res.locals.user },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        createdAt: true,
-      },
-    });
+    const userFound = await UserService.getUser(res.locals.user);
+    // const userFound = await prisma.user.findUnique({
+    //   where: { id: res.locals.user },
+    //   select: {
+    //     id: true,
+    //     name: true,
+    //     email: true,
+    //     createdAt: true,
+    //   },
+    // });
 
     // send response
-    res.json({
-      status: true,
-      content: {
-        data: {
-          id: userFound.id,
-          name: userFound.name,
-          email: userFound.email,
-          created_at: userFound.createdAt,
+    if (userFound) {
+      return res.json({
+        status: true,
+        content: {
+          data: {
+            id: userFound.id,
+            name: userFound.name,
+            email: userFound.email,
+            created_at: userFound.createdAt,
+          },
         },
-      },
-    });
+      });
+    } else {
+      return next(new AppErr("User Not Found", 404));
+    }
   } catch (error: any) {
     return next(new AppErr(error.message, 500));
   }

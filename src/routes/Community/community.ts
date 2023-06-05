@@ -9,7 +9,7 @@ import {
   getJoinedCommunityController,
 } from "../../controllers/Community/community";
 
-const communityRoutes: Router = express.Router();
+const communityRoutes = express.Router();
 
 communityRoutes.post("/", isLogin, createCommunityController);
 communityRoutes.get("/", getAllCommunityController);

@@ -5,7 +5,7 @@ import {
   removeMemberController,
 } from "../../controllers/Member/member";
 
-const memberRoutes: Router = express.Router();
+const memberRoutes = express.Router();
 
 memberRoutes.post("/", isLogin, addMemberController);
 memberRoutes.delete("/:id", isLogin, removeMemberController);

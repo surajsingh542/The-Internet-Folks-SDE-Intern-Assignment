@@ -2,7 +2,7 @@ import { prisma } from "../../utils/db.server";
 import AppErr from "../../utils/AppErr";
 import { Request, Response, NextFunction } from "express";
 import { Snowflake } from "@theinternetfolks/snowflake";
-
+import * as MemberService from "./member.service";
 const addMemberController = async (
   req: Request,
   res: Response,
@@ -15,7 +15,7 @@ const addMemberController = async (
     let errors = [];
 
     // Member already added
-    const memberFound = await prisma.member.findUnique({
+    const memberFound = await prisma.member.findFirst({
       where: { communityId: community, userId: user },
     });
 
@@ -76,7 +76,7 @@ const addMemberController = async (
 
     // Community Admin check
 
-    const communityOwner = await prisma.community.findUnique({
+    const communityOwner = await prisma.community.findFirst({
       where: {
         id: community,
         ownerId: res.locals.user,
@@ -98,16 +98,21 @@ const addMemberController = async (
       });
     }
 
-    const memberCreated = await prisma.member.create({
-      data: {
-        id: Snowflake.generate().toString(),
-        community: { connect: { id: community } },
-        user: { connect: { id: user } },
-        role: { connect: { id: role } },
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
+    const memberCreated = await MemberService.addMember({
+      communityId: community,
+      userId: user,
+      roleId: user,
     });
+    // const memberCreated = await prisma.member.create({
+    //   data: {
+    //     id: Snowflake.generate().toString(),
+    //     community: { connect: { id: community } },
+    //     user: { connect: { id: user } },
+    //     role: { connect: { id: role } },
+    //     createdAt: new Date(),
+    //     updatedAt: new Date(),
+    //   },
+    // });
 
     console.log(memberCreated);
 
@@ -144,6 +149,9 @@ const removeMemberController = async (
       where: {
         id: memberID,
       },
+      select: {
+        communityId: true,
+      },
     });
 
     if (!memberFound) {
@@ -159,12 +167,7 @@ const removeMemberController = async (
 
     if (memberFound) {
       // Community Admin check
-
-      // const communityOwner = await Community.findOne({
-      //   _id: memberFound?.community,
-      //   owner: req.user,
-      // });
-      const communityOwner = await prisma.community.findUnique({
+      const communityOwner = await prisma.community.findFirst({
         where: {
           id: memberFound?.communityId,
           ownerId: res.locals.user,
@@ -189,12 +192,16 @@ const removeMemberController = async (
       //   role: roleFound._id,
       //   user: req.user,
       // });
-
-      const moderatorFound = await prisma.member.findUnique({
-        communityId: memberFound?.communityId,
-        roleId: roleFound.id,
-        userId: res.locals.user,
-      });
+      let moderatorFound = null;
+      if (roleFound) {
+        moderatorFound = await prisma.member.findFirst({
+          where: {
+            communityId: memberFound.communityId,
+            roleId: roleFound.id,
+            userId: res.locals.user,
+          },
+        });
+      }
 
       if (moderatorFound) {
         isModeratorPresent = true;

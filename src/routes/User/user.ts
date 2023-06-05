@@ -6,8 +6,8 @@ import {
   userDetails,
 } from "../../controllers/User/users";
 
-const isLogin = require("../../middlewares/isLogin");
-const userRoutes: Router = express.Router();
+import { isLogin } from "../../middlewares/isLogin";
+const userRoutes = express.Router();
 
 userRoutes.post("/signup", userSignUpController);
 userRoutes.post("/signin", userSignInController);

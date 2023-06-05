@@ -1,15 +1,12 @@
 class AppErr extends Error {
+  statusCode: number;
+  status: string;
   constructor(message: string, statusCode: number) {
     super(message);
+    Object.setPrototypeOf(this, new.target.prototype);
     this.statusCode = statusCode;
     this.status = "Failed";
   }
 }
-// const AppErr(message,statusCode){
-//       const error = new Error(message);
-//       error.statusCode = statusCode;
-//       error.status = "Failed";
-//       return error;
-// }
 
 export default AppErr;
