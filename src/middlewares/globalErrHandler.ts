@@ -1,25 +1,27 @@
-import { Request, Response, NextFunction, ErrorRequestHandler } from "express";
+import { NextFunction, Request, Response } from "express";
+import CustomError from "../utils/AppErr";
 
-const globalErrHandler: ErrorRequestHandler = (
-  err,
-  req: Request,
-  res: Response,
+export default function ErrorHandler(
+  error: Error,
+  request: Request,
+  response: Response,
   next: NextFunction
-) => {
-  // message
-  // status
-  // status code
-  // stack
+) {
+  // console.error(error);
 
-  const statuscode = err.statusCode || 500;
-  const status = err.status || "error";
-  const message = err.message;
-  const stack = err.stack;
-  res.status(statuscode).json({
-    status,
-    message,
-    stack,
+  if (error instanceof CustomError) {
+    return response.status(error.statusCode).json({
+      status: false,
+      errors: error.serialize(),
+    });
+  }
+
+  return response.status(500).json({
+    status: false,
+    errors: [
+      {
+        message: error.message || "Something unexpected happened!",
+      },
+    ],
   });
-};
-
-export default globalErrHandler;
+}

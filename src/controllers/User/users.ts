@@ -3,10 +3,10 @@ import { prisma } from "../../utils/db.server";
 import * as bcrypt from "bcryptjs";
 import { generateToken } from "../../utils/generateToken";
 import { Snowflake } from "@theinternetfolks/snowflake";
-import AppErr from "../../utils/AppErr";
 import { Request, Response, NextFunction } from "express";
 import validator from "validator";
 import * as UserService from "./user.service";
+import { PlatformError } from "../../CustomErrors/PlatfotmError";
 
 const userSignUpController = async (
   req: Request,
@@ -54,10 +54,7 @@ const userSignUpController = async (
     }
 
     if (errorFound) {
-      return res.status(400).json({
-        status: false,
-        errors,
-      });
+      throw new PlatformError(errors);
     }
 
     // hash password
@@ -99,7 +96,8 @@ const userSignUpController = async (
       },
     });
   } catch (error: any) {
-    return next(new AppErr(error.message, 500));
+    next(error);
+    // return next(new AppErr(error.message, 500));
   }
 };
 
@@ -123,10 +121,7 @@ const userSignInController = async (
         message: "Please provide a valid email address.",
         code: "INVALID_INPUT",
       });
-      return res.status(400).json({
-        status: false,
-        errors,
-      });
+      throw new PlatformError(errors);
     }
 
     // find the user
@@ -143,10 +138,7 @@ const userSignInController = async (
         message: "The credentials you provided are invalid.",
         code: "INVALID_CREDENTIALS",
       });
-      return res.status(400).json({
-        status: false,
-        errors,
-      });
+      throw new PlatformError(errors);
     }
 
     // Compare password
@@ -161,10 +153,7 @@ const userSignInController = async (
     }
 
     if (errorFound) {
-      return res.status(400).json({
-        status: false,
-        errors,
-      });
+      throw new PlatformError(errors);
     }
 
     // send response
@@ -183,7 +172,7 @@ const userSignInController = async (
       },
     });
   } catch (error: any) {
-    return next(new AppErr(error.message, 500));
+    next(error);
   }
 };
 
@@ -215,10 +204,14 @@ const userDetails = async (req: Request, res: Response, next: NextFunction) => {
         },
       });
     } else {
-      return next(new AppErr("User Not Found", 404));
+      throw new PlatformError([
+        {
+          message: "User Not Found",
+        },
+      ]);
     }
   } catch (error: any) {
-    return next(new AppErr(error.message, 500));
+    next(error);
   }
 };
 

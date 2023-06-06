@@ -1,8 +1,9 @@
 import { prisma } from "../../utils/db.server";
-import AppErr from "../../utils/AppErr";
+import { PlatformError } from "../../CustomErrors/PlatfotmError";
 import { Request, Response, NextFunction } from "express";
 import { Snowflake } from "@theinternetfolks/snowflake";
 import * as MemberService from "./member.service";
+
 const addMemberController = async (
   req: Request,
   res: Response,
@@ -92,10 +93,7 @@ const addMemberController = async (
     }
 
     if (errorFound) {
-      return res.status(400).json({
-        status: false,
-        errors,
-      });
+      throw new PlatformError(errors);
     }
 
     const memberCreated = await MemberService.addMember({
@@ -103,16 +101,6 @@ const addMemberController = async (
       userId: user,
       roleId: user,
     });
-    // const memberCreated = await prisma.member.create({
-    //   data: {
-    //     id: Snowflake.generate().toString(),
-    //     community: { connect: { id: community } },
-    //     user: { connect: { id: user } },
-    //     role: { connect: { id: role } },
-    //     createdAt: new Date(),
-    //     updatedAt: new Date(),
-    //   },
-    // });
 
     console.log(memberCreated);
 
@@ -129,7 +117,7 @@ const addMemberController = async (
       },
     });
   } catch (error: any) {
-    return next(new AppErr(error.message, 500));
+    next(error);
   }
 };
 
@@ -187,11 +175,6 @@ const removeMemberController = async (
 
       // community moderator check
 
-      // const moderatorFound = await Member.findOne({
-      //   community: memberFound?.community,
-      //   role: roleFound._id,
-      //   user: req.user,
-      // });
       let moderatorFound = null;
       if (roleFound) {
         moderatorFound = await prisma.member.findFirst({
@@ -217,10 +200,7 @@ const removeMemberController = async (
     }
 
     if (errorFound) {
-      return res.status(400).json({
-        status: false,
-        errors,
-      });
+      throw new PlatformError(errors);
     }
 
     // await memberFound.deleteOne({ _id: memberID });
@@ -231,7 +211,7 @@ const removeMemberController = async (
     });
     res.json({ status: true });
   } catch (error: any) {
-    return next(new AppErr(error.message, 500));
+    next(error);
   }
 };
 

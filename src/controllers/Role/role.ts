@@ -1,5 +1,5 @@
 import { prisma } from "../../utils/db.server";
-import AppErr from "../../utils/AppErr";
+import { PlatformError } from "../../CustomErrors/PlatfotmError";
 import { Request, Response, NextFunction } from "express";
 import { Snowflake } from "@theinternetfolks/snowflake";
 import * as RoleService from "./role.service";
@@ -12,16 +12,13 @@ const createRoleController = async (
   try {
     const { name } = req.body;
     if (!name || name.length <= 1) {
-      return res.status(400).json({
-        status: false,
-        errors: [
-          {
-            param: "name",
-            message: "Name should be at least 2 characters.",
-            code: "INVALID_INPUT",
-          },
-        ],
-      });
+      throw new PlatformError([
+        {
+          param: "name",
+          message: "Name should be at least 2 characters.",
+          code: "INVALID_INPUT",
+        },
+      ]);
     }
     let scopes = [];
     if (name.toLowerCase() === "community admin") {
@@ -34,15 +31,6 @@ const createRoleController = async (
 
     const roleCreated = await RoleService.createRole({ name }, scopes);
 
-    // const roleCreated = await prisma.role.create({
-    //   data: {
-    //     id: Snowflake.generate().toString(),
-    //     name: name.toLowerCase(),
-    //     scopes,
-    //     createdAt: new Date(),
-    //     updatedAt: new Date(),
-    //   },
-    // });
     res.json({
       status: true,
       content: {
@@ -55,7 +43,7 @@ const createRoleController = async (
       },
     });
   } catch (error: any) {
-    return next(new AppErr(error.message, 500));
+    next(error);
   }
 };
 
@@ -75,17 +63,6 @@ const getRolesController = async (
 
     const roles = await RoleService.listRoles(skip);
 
-    // const roles = await prisma.role.findMany({
-    //   skip,
-    //   take: 10,
-    //   select: {
-    //     id: true,
-    //     name: true,
-    //     createdAt: true,
-    //     updatedAt: true,
-    //   },
-    // });
-
     const count = await prisma.role.count();
     if (roles) {
       return res.json({
@@ -100,10 +77,14 @@ const getRolesController = async (
         },
       });
     } else {
-      return next(new AppErr("No role exist", 404));
+      throw new PlatformError([
+        {
+          message: "No role exist.",
+        },
+      ]);
     }
   } catch (error: any) {
-    return next(new AppErr(error.message, 500));
+    next(error);
   }
 };
 

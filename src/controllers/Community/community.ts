@@ -1,9 +1,8 @@
 import { Request, Response, NextFunction } from "express";
 import { prisma } from "../../utils/db.server";
 import { Snowflake } from "@theinternetfolks/snowflake";
-import AppErr from "../../utils/AppErr";
 import * as CommunityService from "./community.service";
-
+import { PlatformError } from "../../CustomErrors/PlatfotmError";
 export const createCommunityController = async (
   req: Request,
   res: Response,
@@ -25,27 +24,13 @@ export const createCommunityController = async (
     }
 
     if (errorFound) {
-      return res.status(400).json({
-        status: false,
-        errors,
-      });
+      throw new PlatformError(errors);
     }
 
     const communityCreated = await CommunityService.createCommunity({
       name,
       ownerId: res.locals.user,
     });
-
-    // const communityCreated = await prisma.community.create({
-    //   data: {
-    //     id: Snowflake.generate().toString(),
-    //     name,
-    //     slug: name.toLowerCase(),
-    //     owner: { connect: { id: req.user } },
-    //     createdAt: new Date(),
-    //     updatedAt: new Date(),
-    //   },
-    // });
 
     const roleFound = await prisma.role.findUnique({
       where: {
@@ -100,7 +85,7 @@ export const createCommunityController = async (
       },
     });
   } catch (error: any) {
-    return next(new AppErr(error.message, 500));
+    next(error);
   }
 };
 
@@ -150,7 +135,7 @@ export const getAllCommunityController = async (
       },
     });
   } catch (error: any) {
-    return next(new AppErr(error.message, 500));
+    next(error);
   }
 };
 
@@ -201,7 +186,7 @@ export const getAllCommunityMembersController = async (
       },
     });
   } catch (error: any) {
-    return next(new AppErr(error.message, 500));
+    next(error);
   }
 };
 
@@ -251,7 +236,7 @@ export const getOwnedCommunityController = async (
       },
     });
   } catch (error: any) {
-    return next(new AppErr(error.message, 500));
+    next(error);
   }
 };
 
@@ -307,6 +292,6 @@ export const getJoinedCommunityController = async (
       },
     });
   } catch (error: any) {
-    return next(new AppErr(error.message, 500));
+    next(error);
   }
 };
