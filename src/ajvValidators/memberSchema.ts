@@ -15,6 +15,13 @@ const memberSchema: JSONSchemaType<MyData> = {
   },
   required: ["community", "user", "role"],
   additionalProperties: false,
+  errorMessage: {
+    required: {
+      community: "Community Id is required",
+      user: "User Id is required",
+      role: "Role Id is required",
+    },
+  },
 };
 
 export const addMemberSchema = ajvInstance.compile(memberSchema);

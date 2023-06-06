@@ -11,6 +11,14 @@ const createSchema: JSONSchemaType<MyData> = {
   },
   required: ["name"],
   additionalProperties: false,
+  errorMessage: {
+    properties: {
+      name: "Name should be at least 2 characters.",
+    },
+    required: {
+      name: "Name is required",
+    },
+  },
 };
 
 export const createCommunitySchema = ajvInstance.compile(createSchema);

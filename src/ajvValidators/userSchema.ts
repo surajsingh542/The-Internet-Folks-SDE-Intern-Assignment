@@ -32,6 +32,16 @@ const signInSchema: JSONSchemaType<SignIn> = {
   },
   required: ["email", "password"],
   additionalProperties: false,
+  errorMessage: {
+    properties: {
+      email: "Please provide a valid email address.",
+      password: "Password should be of minimum 6 characters",
+    },
+    required: {
+      email: "Email is required",
+      password: "Password is required",
+    },
+  },
 };
 
 export const userSignInSchema = ajvInstance.compile(signInSchema);

@@ -19,7 +19,7 @@ export class ValidationError extends CustomError {
     return this.errors.map((item) => ({
       message: item.message,
       param: item.param,
-      code: item.code,
+      code: item.code || "INVALID_INPUT",
     }));
   }
 }
