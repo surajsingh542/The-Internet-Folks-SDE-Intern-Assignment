@@ -1,5 +1,5 @@
-import { config } from "dotenv";
-config();
+// import { config } from "dotenv";
+// config();
 import express from "express";
 // import { Server } from "http";
 import roleRoutes from "./routes/Role/role";
@@ -24,7 +24,7 @@ app.use("/v1/member", memberRoutes);
 // Error handlers
 app.use(globalErrHandler);
 
-const PORT: number = parseInt(process.env.PORT as string, 10) || 9000;
+const PORT: number = parseInt(process.env.PORT as string, 10) || 3000;
 app.listen(PORT, () => {
   console.log(`Server is up and running on ${PORT}`);
 });
