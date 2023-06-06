@@ -1,10 +1,10 @@
 import { ajvInstance, JSONSchemaType } from "./ajv-instance";
 
-interface MyData {
+interface Role {
   name: string;
 }
 
-const createSchema: JSONSchemaType<MyData> = {
+const roleSchema: JSONSchemaType<Role> = {
   type: "object",
   properties: {
     name: { type: "string", minLength: 2 },
@@ -13,4 +13,4 @@ const createSchema: JSONSchemaType<MyData> = {
   additionalProperties: false,
 };
 
-export const createCommunitySchema = ajvInstance.compile(createSchema);
+export const addRoleSchema = ajvInstance.compile(roleSchema);

@@ -8,10 +8,17 @@ import {
   getOwnedCommunityController,
   getJoinedCommunityController,
 } from "../../controllers/Community/community";
+import validateDto from "../../middlewares/Validate";
+import { createCommunitySchema } from "../../ajvValidators/communitySchema";
 
 const communityRoutes = express.Router();
 
-communityRoutes.post("/", isLogin, createCommunityController);
+communityRoutes.post(
+  "/",
+  validateDto(createCommunitySchema),
+  isLogin,
+  createCommunityController
+);
 communityRoutes.get("/", getAllCommunityController);
 communityRoutes.get("/:id/members", getAllCommunityMembersController);
 communityRoutes.get("/me/owner", isLogin, getOwnedCommunityController);
