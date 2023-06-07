@@ -1,8 +1,7 @@
-import { prisma } from "../../utils/db.server";
-import { PlatformError } from "../../CustomErrors/PlatfotmError";
+import { prisma } from "../../../universe/v1/utils/db.server";
+import { PlatformError } from "../../../CustomErrors/PlatfotmError";
 import { Request, Response, NextFunction } from "express";
-import { Snowflake } from "@theinternetfolks/snowflake";
-import * as RoleService from "./role.service";
+import * as RoleService from "../../../services/v1/Role/role.service";
 
 const createRoleController = async (
   req: Request,

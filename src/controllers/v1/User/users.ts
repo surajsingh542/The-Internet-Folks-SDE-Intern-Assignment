@@ -1,12 +1,10 @@
-import { prisma } from "../../utils/db.server";
-// const bcrypt = require("bcryptjs");
+import { prisma } from "../../../universe/v1/utils/db.server";
 import * as bcrypt from "bcryptjs";
-import { generateToken } from "../../utils/generateToken";
-import { Snowflake } from "@theinternetfolks/snowflake";
+import { generateToken } from "../../../universe/v1/utils/generateToken";
 import { Request, Response, NextFunction } from "express";
 import validator from "validator";
-import * as UserService from "./user.service";
-import { PlatformError } from "../../CustomErrors/PlatfotmError";
+import * as UserService from "../../../services/v1/User/user.service";
+import { PlatformError } from "../../../CustomErrors/PlatfotmError";
 
 const userSignUpController = async (
   req: Request,

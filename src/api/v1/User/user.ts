@@ -4,14 +4,14 @@ import {
   userSignUpController,
   userSignInController,
   userDetails,
-} from "../../controllers/User/users";
+} from "../../../controllers/v1/User/users";
 
-import { isLogin } from "../../middlewares/isLogin";
-import validateDto from "../../middlewares/Validate";
+import { isLogin } from "../../../middlewares/isLogin";
+import validateDto from "../../../middlewares/Validate";
 import {
   userSignUpSchema,
   userSignInSchema,
-} from "../../ajvValidators/userSchema";
+} from "../../../schema/v1/userSchema";
 
 const userRoutes = express.Router();
 

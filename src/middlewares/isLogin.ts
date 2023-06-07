@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
-import { getTokenFromHeader } from "../utils/getTokenFromHeader";
-import { verifyToken } from "../utils/verifyToken";
+import { getTokenFromHeader } from "../universe/v1/utils/getTokenFromHeader";
+import { verifyToken } from "../universe/v1/utils/verifyToken";
 
 export const isLogin = (req: Request, res: Response, next: NextFunction) => {
   // get token from req header

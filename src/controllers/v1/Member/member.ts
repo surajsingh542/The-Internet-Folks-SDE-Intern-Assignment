@@ -1,8 +1,7 @@
-import { prisma } from "../../utils/db.server";
-import { PlatformError } from "../../CustomErrors/PlatfotmError";
+import { prisma } from "../../../universe/v1/utils/db.server";
+import { PlatformError } from "../../../CustomErrors/PlatfotmError";
 import { Request, Response, NextFunction } from "express";
-import { Snowflake } from "@theinternetfolks/snowflake";
-import * as MemberService from "./member.service";
+import * as MemberService from "../../../services/v1/Member/member.service";
 
 const addMemberController = async (
   req: Request,

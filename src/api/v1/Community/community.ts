@@ -1,15 +1,15 @@
 import express, { Router } from "express";
 
-import { isLogin } from "../../middlewares/isLogin";
+import { isLogin } from "../../../middlewares/isLogin";
 import {
   createCommunityController,
   getAllCommunityController,
   getAllCommunityMembersController,
   getOwnedCommunityController,
   getJoinedCommunityController,
-} from "../../controllers/Community/community";
-import validateDto from "../../middlewares/Validate";
-import { createCommunitySchema } from "../../ajvValidators/communitySchema";
+} from "../../../controllers/v1/Community/community";
+import validateDto from "../../../middlewares/Validate";
+import { createCommunitySchema } from "../../../schema/v1/communitySchema";
 
 const communityRoutes = express.Router();
 

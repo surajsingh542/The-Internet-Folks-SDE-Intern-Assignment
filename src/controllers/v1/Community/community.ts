@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from "express";
-import { prisma } from "../../utils/db.server";
+import { prisma } from "../../../universe/v1/utils/db.server";
 import { Snowflake } from "@theinternetfolks/snowflake";
-import * as CommunityService from "./community.service";
-import { PlatformError } from "../../CustomErrors/PlatfotmError";
+import * as CommunityService from "../../../services/v1/Community/community.service";
+import { PlatformError } from "../../../CustomErrors/PlatfotmError";
 export const createCommunityController = async (
   req: Request,
   res: Response,

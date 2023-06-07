@@ -1,30 +1,31 @@
-// import { config } from "dotenv";
-// config();
 import express from "express";
-// import { Server } from "http";
-import roleRoutes from "./routes/Role/role";
-import userRoutes from "./routes/User/user";
-import communityRoutes from "./routes/Community/community";
-import memberRoutes from "./routes/Member/member";
+import roleRoutes from "./api/v1/Role/role";
+import userRoutes from "./api/v1/User/user";
+import communityRoutes from "./api/v1/Community/community";
+import memberRoutes from "./api/v1/Member/member";
 import globalErrHandler from "./middlewares/globalErrHandler";
+import FrameworkLoader from "./loaders/v1/framework";
+import Logger from "./universe/v1/libraries/logger";
+import Env from "./loaders/v1/env";
 
-const app = express();
+const server = (): express.Application => {
+  const app = express();
 
-//pass incoming data
-app.use(express.json());
-// pass form data
-app.use(express.urlencoded({ extended: true }));
+  // Loaders
+  Env.Loader();
+  FrameworkLoader(app);
+  Logger.Loader();
 
-// Routes
-app.use("/v1", roleRoutes);
-app.use("/v1/community", communityRoutes);
-app.use("/v1/auth", userRoutes);
-app.use("/v1/member", memberRoutes);
+  // Routes
+  app.use("/v1", roleRoutes);
+  app.use("/v1/community", communityRoutes);
+  app.use("/v1/auth", userRoutes);
+  app.use("/v1/member", memberRoutes);
 
-// Error handlers
-app.use(globalErrHandler);
+  // Error handlers
+  app.use(globalErrHandler);
 
-const PORT: number = parseInt(process.env.PORT as string, 10) || 3000;
-app.listen(PORT, () => {
-  console.log(`Server is up and running on ${PORT}`);
-});
+  return app;
+};
+
+export default server;

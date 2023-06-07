@@ -1,4 +1,4 @@
-import CustomError, { IErrorSeralized } from "../utils/AppErr";
+import CustomError, { IErrorSeralized } from "../universe/v1/utils/AppErr";
 
 export class ValidationError extends CustomError {
   statusCode: number = 400;

@@ -1,4 +1,4 @@
-import { prisma } from "../../utils/db.server";
+import { prisma } from "../../../universe/v1/utils/db.server";
 import { Snowflake } from "@theinternetfolks/snowflake";
 
 type Role = {

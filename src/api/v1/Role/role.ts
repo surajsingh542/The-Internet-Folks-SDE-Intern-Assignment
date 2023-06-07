@@ -3,9 +3,9 @@ import express, { Router } from "express";
 import {
   createRoleController,
   getRolesController,
-} from "../../controllers/Role/role";
-import validateDto from "../../middlewares/Validate";
-import { addRoleSchema } from "../../ajvValidators/roleSchema";
+} from "../../../controllers/v1/Role/role";
+import validateDto from "../../../middlewares/Validate";
+import { addRoleSchema } from "../../../schema/v1/roleSchema";
 
 const roleRoutes = express.Router();
 
